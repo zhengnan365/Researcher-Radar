@@ -1,0 +1,172 @@
+.admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.mini-metric {
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(238, 248, 255, 0.92), rgba(255, 255, 255, 0.86));
+  border: 1px solid rgba(47, 140, 255, 0.13);
+}
+
+.mini-metric span {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.mini-metric strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--deep-blue);
+  font-size: 24px;
+}
+
+.mini-metric.danger strong {
+  color: var(--danger-soft);
+}
+
+.filter-panel,
+.toolbar {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  margin-bottom: 0;
+  border: 1px solid rgba(47, 140, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.58);
+  min-width: 0;
+}
+
+.filter-item {
+  flex: 1 1 11rem;
+  min-width: 9.5rem;
+  width: auto !important;
+  max-width: none;
+}
+
+.search-input {
+  flex: 1.3 1 14rem;
+  min-width: 12rem;
+  width: auto !important;
+  max-width: none;
+}
+
+.publisher-input {
+  flex: 0.9 1 10rem;
+  width: auto !important;
+  max-width: none;
+}
+
+.status-select {
+  flex: 0.75 1 8rem;
+  min-width: 7rem;
+  width: auto !important;
+  max-width: none;
+}
+
+.filter-panel > .filter-item,
+.toolbar > .filter-item,
+.filter-panel .filter-item,
+.toolbar .filter-item,
+.filter-panel > .el-input,
+.filter-panel > .el-select,
+.filter-panel > .el-date-editor,
+.filter-panel > .el-input-number,
+.toolbar > .el-input,
+.toolbar > .el-select,
+.toolbar > .el-date-editor,
+.toolbar > .el-input-number,
+.filter-panel .el-input,
+.filter-panel .el-select,
+.filter-panel .el-date-editor,
+.filter-panel .el-input-number,
+.toolbar .el-input,
+.toolbar .el-select,
+.toolbar .el-date-editor,
+.toolbar .el-input-number {
+  flex: 1 1 11rem;
+  min-width: 9.5rem;
+  max-width: none;
+  width: auto !important;
+}
+
+.filter-panel > .search-input,
+.toolbar > .search-input,
+.filter-panel .search-input,
+.toolbar .search-input {
+  flex: 1.3 1 14rem;
+  min-width: 12rem;
+  max-width: none;
+}
+
+.filter-panel > .publisher-input,
+.toolbar > .publisher-input,
+.filter-panel .publisher-input,
+.toolbar .publisher-input {
+  flex: 0.9 1 10rem;
+  max-width: none;
+}
+
+.filter-panel > .status-select,
+.toolbar > .status-select,
+.filter-panel .status-select,
+.toolbar .status-select {
+  flex: 0.75 1 8rem;
+  min-width: 7rem;
+  max-width: none;
+}
+
+.filter-panel > .el-button,
+.toolbar > .el-button,
+.filter-panel .el-button,
+.toolbar .el-button {
+  flex: 0 0 auto;
+}
+
+.filter-actions {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex: 0 1 auto;
+  min-width: fit-content;
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 0;
+}
+
+.bulk-tip {
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1440px) {
+  .filter-panel,
+  .toolbar {
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .mini-metric {
+    padding: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .filter-actions {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+}

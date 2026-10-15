@@ -1,0 +1,76 @@
+.fade-in {
+  animation: fadeIn 0.42s ease both;
+}
+
+.slide-up {
+  animation: slideUp 0.48s ease both;
+}
+
+.float-soft {
+  animation: floatSoft 5s ease-in-out infinite;
+}
+
+.pulse-dot {
+  position: relative;
+}
+
+.pulse-dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--cyan);
+  box-shadow: 0 0 0 rgba(37, 214, 200, 0.45);
+  animation: pulse 1.8s infinite;
+}
+
+.hover-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 54px rgba(47, 140, 255, 0.18);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatSoft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 214, 200, 0.42);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(37, 214, 200, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 214, 200, 0);
+  }
+}
