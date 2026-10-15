@@ -14,9 +14,7 @@
 
 - 本地开发：见[安装步骤](#安装步骤)和[启动方式](#启动方式)。
 - 页面操作：见[功能使用指南](#功能使用指南)。
-- GitHub / 宝塔部署：见[通过-git-clone-部署到宝塔](#通过-git-clone-部署到宝塔)。
-- 首次部署与增量更新：见 [docs/DEPLOY_FIRST_INCREMENTAL.md](docs/DEPLOY_FIRST_INCREMENTAL.md)。
-- 完整宝塔配置：见 [docs/DEPLOY_BAOTA.md](docs/DEPLOY_BAOTA.md)。
+- 服务器部署：见 [部署与运行](docs/DEPLOY_FIRST_INCREMENTAL.md)。
 
 ## 主要功能
 
@@ -121,58 +119,7 @@ git clone git@github.com:zhengnan365/Researcher-Radar.git researcher-radar
 
 如果使用 GitHub Desktop，本地选择 `File -> Add local repository` 打开本项目；首次上传使用 `Publish repository`，并建议勾选 `Keep this code private`。
 
-如果是直接上传文件到服务器，确保保留 `backend/`、`frontend/`、`scripts/`、`README.md`、`TECHNICAL_GUIDE.md` 和 `.env.example`。推荐使用部署包脚本，避免覆盖服务器数据库和运行配置。
-
-生成部署包：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts\make_deploy_package.ps1
-```
-
-服务器端首次部署或增量部署：
-
-服务器可直接使用 `git clone` 在线获取代码；首次部署、已有 ZIP 部署在线更新的完整命令见[在线 Git 部署](docs/DEPLOY_FIRST_INCREMENTAL.md#在线-git-部署推荐)。以下是 ZIP 部署命令：
-
-```bash
-rm -rf /tmp/researcher_radar_release
-mkdir -p /tmp/researcher_radar_release
-unzip /www/wwwroot/researcher_radar_deploy_YYYYMMDD.zip -d /tmp/researcher_radar_release
-bash /tmp/researcher_radar_release/deploy.sh
-```
-
-部署脚本会让用户选择：
-
-```text
-1) 首次部署
-2) 增量部署
-```
-
-首次部署和增量部署都会询问：
-
-```text
-是否创建/重启 systemd 后端服务（选择 Y 将强制释放所选后端端口） [Y]:
-```
-
-- 选择 `Y`：停止所选 systemd 服务，显示后端端口的占用进程，先尝试正常终止，必要时强制终止，然后重新创建并启动服务。
-- 选择 `N`：不停止现有进程、不释放端口，也不修改或重启 systemd 服务。
-- 同一台服务器不要同时使用宝塔 Python 项目和 systemd 管理同一个后端端口；生产环境推荐只保留 `researcher-radar.service`。
-
-详细说明见：[docs/DEPLOY_FIRST_INCREMENTAL.md](docs/DEPLOY_FIRST_INCREMENTAL.md)。
-
-旧版脚本仍保留作兼容。如果你已经把完整代码解压到了正式目录，也可以执行：
-
-```bash
-cd /www/wwwroot/researcher-radar
-bash scripts/one_click_deploy.sh
-```
-
-但日常推荐使用 `deploy.sh`，因为它会先解压到临时目录，再安全同步代码，不会覆盖数据库和 `.env`。
-
-宝塔 Python 项目推荐使用部署脚本最后输出的启动命令，例如：
-
-```bash
-DOMAIN=your-domain.com SERVER_IP=203.0.113.10 PUBLIC_SCHEME=https BACKEND_PORT=8000 bash /www/wwwroot/researcher-radar/scripts/run_backend.sh
-```
+服务器安装与更新请按[部署与运行](docs/DEPLOY_FIRST_INCREMENTAL.md)操作。
 
 ### 2. 安装后端依赖
 
@@ -298,158 +245,9 @@ python manage.py createsuperuser
 
 同一来源地址和用户名连续登录失败 8 次后，登录会限制 15 分钟；计数保存在数据库中，对多个 Gunicorn worker 生效。公网部署必须使用 HTTPS，并设置独立的 `DJANGO_SECRET_KEY`、明确的 `DJANGO_ALLOWED_HOSTS` 和可信反向代理。后台抓取、重评、摘要更新目前仍运行在 Web 进程内；进程退出后任务会标为失败，需要手动重试。
 
-## 通过 Git Clone 部署到宝塔
+## 服务器部署
 
-### 首次部署
-
-服务器准备好 Git、Python、Node.js、Nginx 后执行：
-
-```bash
-cd /www/wwwroot
-git clone git@github.com:zhengnan365/Researcher-Radar.git researcher-radar
-cd researcher-radar
-bash scripts/deploy_package.sh
-```
-
-根据提示选择 `1) 首次部署`，依次填写域名、服务器 IP、后端端口、管理员账号和 cron 时间。脚本会创建独立数据目录、后端虚拟环境、前端构建、数据库迁移、静态文件、Nginx 示例配置，以及可选的 systemd 和 cron。
-
-### 后续增量更新
-
-本地完成修改并推送 GitHub 后，在服务器执行：
-
-```bash
-cd /www/wwwroot/researcher-radar
-git remote set-url origin git@github.com:zhengnan365/Researcher-Radar.git
-git pull --ff-only
-bash scripts/deploy_package.sh
-```
-
-仓库历史曾清理重写。旧服务器检出第一次更新前，请先进入**现有项目目录**，按[首次与增量部署指南](docs/DEPLOY_FIRST_INCREMENTAL.md#6-增量部署)执行一次 `git fetch` 和 `git reset --hard origin/main`；此后可继续使用上面的 `git pull --ff-only`。如果服务器原本使用 HTTPS 拉取，则将 origin 设为 `https://github.com/zhengnan365/Researcher-Radar.git`。选择 `2) 增量部署`；若旧目录名仍为 `literature_daily`，填写原目录和原服务名。脚本会保留：
-
-- `/www/wwwroot/researcher-radar/.env`；
-- `/www/wwwroot/researcher-radar/data/db.sqlite3`；
-- `/www/wwwroot/researcher-radar/logs/`；
-- 已生成的生产运行配置。
-
-更新前建议备份：
-
-```bash
-cp /www/wwwroot/researcher-radar/data/db.sqlite3 \
-  /www/wwwroot/researcher-radar/data/db.sqlite3.$(date +%Y%m%d_%H%M%S).bak
-```
-
-私有仓库需先把服务器公钥添加到 GitHub 仓库的 `Settings -> Deploy keys`。服务器生成只读 Deploy Key：
-
-```bash
-ssh-keygen -t ed25519 -C "researcher-radar-server"
-cat ~/.ssh/id_ed25519.pub
-ssh -T git@github.com
-```
-
-## 带域名服务器部署说明（宝塔）
-
-完整可执行部署教程见：
-
-```text
-docs/DEPLOY_BAOTA.md
-```
-
-部署辅助脚本：
-
-```text
-scripts/make_deploy_package.ps1  # 本地生成干净部署 zip
-scripts/deploy_package.sh        # 服务器端首次/增量部署入口
-scripts/one_click_deploy.sh      # 早期服务器交互式一键部署
-scripts/run_backend.sh           # 宝塔 Python 项目后端启动脚本
-scripts/server_setup.sh          # 服务器初始化后端
-scripts/build_frontend.sh        # 服务器构建前端
-scripts/create_admin.sh          # 交互式创建或重置管理员
-scripts/install_cron.sh          # 安装每日抓取 cron
-```
-
-推荐使用“前端静态站点 + Django 后端反向代理”的方式。
-
-1. 上传项目到：
-
-```text
-/www/wwwroot/researcher-radar/
-```
-
-2. 后端安装依赖并初始化数据库：
-
-```bash
-cd /www/wwwroot/researcher-radar/backend
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py collectstatic --noinput
-```
-
-3. 宝塔中新建 Python 项目：
-
-```text
-项目目录：/www/wwwroot/researcher-radar/backend
-启动命令：/www/wwwroot/researcher-radar/backend/.venv/bin/gunicorn literature_backend.wsgi:application --bind 127.0.0.1:8000 --workers 2
-```
-
-4. 前端配置生产 API：
-
-在 `frontend/.env.production` 中写入：
-
-```text
-VITE_API_BASE_URL=https://你的域名/api
-VITE_ADMIN_URL=https://你的域名/admin/
-```
-
-然后构建：
-
-```bash
-cd /www/wwwroot/researcher-radar/frontend
-npm install
-npm run build
-```
-
-5. 宝塔中新建静态站点，网站根目录指向：
-
-```text
-/www/wwwroot/researcher-radar/frontend/dist
-```
-
-6. Nginx 反向代理示例：
-
-```nginx
-location /api/ {
-    proxy_pass http://127.0.0.1:8000/api/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-
-location /admin/ {
-    proxy_pass http://127.0.0.1:8000/admin/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}
-
-location /static/ {
-    alias /www/wwwroot/researcher-radar/staticfiles/;
-}
-```
-
-7. 生产环境变量至少设置：
-
-```text
-DJANGO_DEBUG=false
-DJANGO_SECRET_KEY=安全随机字符串
-DJANGO_ALLOWED_HOSTS=你的域名,www.你的域名,127.0.0.1
-DJANGO_CORS_ALLOWED_ORIGINS=https://你的域名
-DJANGO_CSRF_TRUSTED_ORIGINS=https://你的域名
-```
+直接 clone、下载上传及启动检查统一见[部署与运行](docs/DEPLOY_FIRST_INCREMENTAL.md)。
 
 ## 定时任务
 
@@ -948,17 +746,6 @@ DJANGO_CSRF_TRUSTED_ORIGINS=https://你的域名
 ### 7. RSS 抓取没有新增
 
 如果某 RSS 源返回的前几十条都已存在，系统会提前停止检查该源，避免重复跑外部 API。这是正常的去重加速策略。
-
-### 8. 宝塔部署后静态资源 404
-
-执行：
-
-```bash
-cd backend
-python manage.py collectstatic --noinput
-```
-
-并确认 Nginx `/static/` 指向项目根目录的 `staticfiles/`，与 `DJANGO_STATIC_ROOT` 保持一致。
 
 ## 交付状态
 

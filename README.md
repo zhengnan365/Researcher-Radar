@@ -74,9 +74,8 @@ npm.cmd run dev
 
 ### 服务器部署
 
-- **首次部署**：运行部署向导时设置自己的管理员用户名和密码，再配置域名、数据库与定时任务。
-- **增量部署**：保留现有账号、数据库和 API 配置，不需要重新设置密码。
-- 正式部署需设置独立的 `DJANGO_SECRET_KEY`、允许访问的域名和 HTTPS。配置示例见 [.env.example](.env.example)，操作见[首次与增量部署指南](docs/DEPLOY_FIRST_INCREMENTAL.md)。
+- 服务器可直接 clone，或下载 ZIP 后上传；运行部署脚本即可安装依赖、构建前端并启动后端。首次部署需设置管理员账号密码，增量部署保留现有数据和配置。
+- 正式部署需设置独立的 `DJANGO_SECRET_KEY`、允许访问的域名和 HTTPS。配置示例见 [.env.example](.env.example)，操作见[部署与运行](docs/DEPLOY_FIRST_INCREMENTAL.md)。
 
 不要把 `.env`、数据库、API Key 或配置导出文件提交到 Git。配置导出文件包含敏感 Key，应当作为私有备份保存。
 
@@ -87,8 +86,7 @@ npm.cmd run dev
 ## 文档
 
 - [完整技术手册：功能、配置、接口与运维](TECHNICAL_GUIDE.md)
-- [首次部署与增量更新](docs/DEPLOY_FIRST_INCREMENTAL.md)
-- [宝塔部署](docs/DEPLOY_BAOTA.md)
+- [部署与运行：直接 clone 或下载上传](docs/DEPLOY_FIRST_INCREMENTAL.md)
 - [研究方向与关键词粘贴示例](docs/import_examples/README.md)
 
 ## 开源协议
