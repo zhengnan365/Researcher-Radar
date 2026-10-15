@@ -1,5 +1,5 @@
 <template>
-  <el-dialog v-model="visible" title="文献详情" class="paper-detail-dialog" width="min(900px, calc(100vw - 28px))" top="5vh">
+  <el-dialog v-model="visible" title="文献详情" class="paper-detail-dialog" width="min(900px, calc(100vw - 28px))" top="5vh" append-to-body lock-scroll>
     <template v-if="paper">
       <h2 class="detail-title">{{ paper.title }}</h2>
       <p class="detail-authors muted">{{ paper.authors || '未获取作者' }}</p>
@@ -24,13 +24,8 @@
           <el-empty v-else-if="!summaryLoading" :description="paper.abstract ? '点击生成速读' : '缺少原始摘要，暂不能生成速读'" :image-size="72" />
           <p v-else class="muted ai-waiting">正在生成速读，请稍候…</p>
         </el-tab-pane>
-        <el-tab-pane label="评分与信息" name="details">
+        <el-tab-pane label="评分" name="score">
           <el-descriptions :column="2" border size="small" class="detail-descriptions">
-            <el-descriptions-item label="期刊">{{ paper.journal || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="发布日期">{{ paper.published_date || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="DOI">{{ paper.doi || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="来源">{{ paper.source_name || paper.source_name_display || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="Zotero">{{ paper.zotero_imported ? '已导入' : '未导入' }}</el-descriptions-item>
             <el-descriptions-item label="推荐分数">
               {{ paper.recommend_score ?? 0 }} 分
               <span v-if="paper.relevance_override === 'irrelevant'" class="muted">（已标记不相关，系统原评分 {{ paper.system_recommend_score ?? 0 }} 分）</span>
@@ -71,6 +66,15 @@
               </template>
             </el-collapse-item>
           </el-collapse>
+        </el-tab-pane>
+        <el-tab-pane label="文章信息" name="info">
+          <el-descriptions :column="2" border size="small" class="detail-descriptions">
+            <el-descriptions-item label="期刊">{{ paper.journal || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="发布日期">{{ paper.published_date || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="DOI">{{ paper.doi || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="来源">{{ paper.source_name || paper.source_name_display || '-' }}</el-descriptions-item>
+            <el-descriptions-item label="Zotero">{{ paper.zotero_imported ? '已导入' : '未导入' }}</el-descriptions-item>
+          </el-descriptions>
           <div class="tag-row">
             <el-tag v-for="item in paper.directions" :key="`d-${item.id}`" type="success">{{ item.name }}</el-tag>
             <el-tag v-for="item in paper.keywords" :key="`k-${item.id}`">{{ item.keyword }}</el-tag>
@@ -151,6 +155,7 @@ function formatDateTime(value) {
 :global(.paper-detail-dialog .el-dialog__body) {
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding-top: 8px;
 }
 :global(.paper-detail-dialog .el-dialog__header) { flex: none; }
