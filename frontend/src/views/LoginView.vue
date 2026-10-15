@@ -39,7 +39,7 @@
 
     <footer class="login-footer">
       <span>Copyright © All Rights Reserved.</span>
-      <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer"></a>
+      <a v-if="icpNumber" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">{{ icpNumber }}</a>
     </footer>
   </main>
 </template>
@@ -54,6 +54,7 @@ const route = useRoute()
 const loading = ref(false)
 const error = ref('')
 const form = reactive({ username: '', password: '' })
+const icpNumber = String(import.meta.env.VITE_ICP_NUMBER || '').trim()
 
 async function submit() {
   if (!form.username || !form.password) {
