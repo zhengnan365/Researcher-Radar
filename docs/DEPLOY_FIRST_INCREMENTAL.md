@@ -124,17 +124,30 @@ cron 时间支持三种输入：
 
 GitHub 仓库地址为 `zhengnan365/Researcher-Radar`。使用 Git 检出的服务器需将 `origin` 更新为 `git@github.com:zhengnan365/Researcher-Radar.git`（若原本使用 HTTPS，则使用相应 HTTPS 地址）。
 
-**2026 年 10 月历史清理后的一次性更新：**旧检出与新的 `main` 没有共同提交，`git pull --ff-only` 会失败。先确认没有需要保留的代码改动，再在服务器项目目录执行：
+**2026 年 10 月历史清理后的一次性更新：**旧检出与新的 `main` 没有共同提交，`git pull --ff-only` 会失败。`/www/wwwroot` 是项目的上级目录，不能直接在其中运行下面的命令。先找出服务器实际使用的项目目录：
+
+```bash
+find /www/wwwroot -maxdepth 3 -name .git -print
+```
+
+如果找到例如 `/www/wwwroot/researcher-radar/.git`，先进入该目录并确认 Git 根目录和本地改动。其他目录请替换为实际路径：
+
+```bash
+cd /www/wwwroot/researcher-radar || exit 1
+git rev-parse --show-toplevel
+git status --short
+```
+
+确认输出的目录正确，并备份需要保留的代码改动后，再在**同一目录**执行：
 
 ```bash
 git remote set-url origin git@github.com:zhengnan365/Researcher-Radar.git
 git fetch origin main
-git status --short
 git reset --hard origin/main
 bash scripts/deploy_package.sh
 ```
 
-若 `git status --short` 显示需要保留的代码改动，请先单独备份这些文件，再执行 `reset`。这段命令要在服务器**现有的项目目录**运行；旧目录无需改名。`.env`、`data/db.sqlite3`、日志和虚拟环境都在 Git 跟踪范围之外，部署脚本继续按增量模式 `2` 运行，不会重置账号密码。完成这次更新后，后续可恢复使用 `git pull --ff-only`。
+若没有找到 `.git`，说明服务器可能使用 ZIP 部署包；不要执行 `git reset`，按本指南第 2–4 节上传新版部署包，并在向导中选择 `2) 增量部署`，填写现有项目目录。若 `git status --short` 显示需要保留的代码改动，请先单独备份这些文件，再执行 `reset`。旧目录无需改名。`.env`、`data/db.sqlite3`、日志和虚拟环境都在 Git 跟踪范围之外，部署脚本继续按增量模式 `2` 运行，不会重置账号密码。完成这次更新后，后续可恢复使用 `git pull --ff-only`。
 
 后续更新建议选择 `2`。
 
