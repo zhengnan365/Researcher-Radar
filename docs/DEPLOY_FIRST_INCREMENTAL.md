@@ -18,6 +18,37 @@
 
 已有服务器若部署在 `/www/wwwroot/researcher-radar`，增量更新时继续使用原目录和原服务名；无需为了项目改名而移动 `.env` 或数据库。本文后续的路径和服务名示例均针对新部署，旧部署应替换为实际值。
 
+## 在线 Git 部署（推荐）
+
+### 首次部署
+
+服务器可以直接从公开仓库获取代码，不需要先在本地制作 ZIP：
+
+```bash
+git clone https://github.com/zhengnan365/Researcher-Radar.git /www/wwwroot/researcher-radar &&
+cd /www/wwwroot/researcher-radar &&
+bash scripts/deploy_package.sh
+```
+
+向导中选择 `1) 首次部署`，设置自己的管理员账号和密码。目标目录必须尚不存在，或为空目录；已有运行数据时不要直接克隆覆盖。
+
+### 现有 ZIP 部署在线更新
+
+如果现有项目目录没有 `.git`，先克隆到独立临时目录，再运行部署脚本：
+
+```bash
+release_dir=$(mktemp -d /tmp/researcher-radar.XXXXXX) &&
+git clone --depth 1 https://github.com/zhengnan365/Researcher-Radar.git "$release_dir" &&
+cd "$release_dir" &&
+bash scripts/deploy_package.sh
+```
+
+向导中选择 `2) 增量部署`，**服务器项目目录填写现有运行目录**，例如 `/www/wwwroot/researcher-radar`。脚本从临时克隆同步代码并保留该目录中的 `.env`、数据库和日志。不要在已有的非空目录直接运行 `git clone`。部署完成后可清理临时克隆；下次仍可用同样方式在线更新。
+
+若现有项目目录包含 `.git`，请按[第 6 节](#6-增量部署)处理历史改写后的一次性更新，不要把临时克隆的代码直接覆盖到旧 Git 工作区。
+
+以下第 1–4 节介绍不使用 Git 时的 ZIP 部署方式。
+
 ## 1. 本地生成部署包
 
 在本地项目根目录执行：

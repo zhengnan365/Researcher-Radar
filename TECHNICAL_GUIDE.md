@@ -131,6 +131,8 @@ powershell -ExecutionPolicy Bypass -File scripts\make_deploy_package.ps1
 
 服务器端首次部署或增量部署：
 
+服务器可直接使用 `git clone` 在线获取代码；首次部署、已有 ZIP 部署在线更新的完整命令见[在线 Git 部署](docs/DEPLOY_FIRST_INCREMENTAL.md#在线-git-部署推荐)。以下是 ZIP 部署命令：
+
 ```bash
 rm -rf /tmp/researcher_radar_release
 mkdir -p /tmp/researcher_radar_release

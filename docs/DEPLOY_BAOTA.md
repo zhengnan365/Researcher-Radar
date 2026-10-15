@@ -40,6 +40,8 @@ ping radar.example.com
 
 ## 2. 上传部署包
 
+如果服务器可以访问 GitHub，可直接 `git clone` 后部署；已有 ZIP 部署也可克隆到临时目录做增量更新。完整命令见[在线 Git 部署](DEPLOY_FIRST_INCREMENTAL.md#在线-git-部署推荐)。以下为 ZIP 部署方式。
+
 本地推荐用脚本生成干净部署包：
 
 ```powershell
