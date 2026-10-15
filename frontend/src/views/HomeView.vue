@@ -1,5 +1,5 @@
 <template>
-  <div class="page home-page fade-in">
+  <div class="page home-page">
     <div class="home-summary">
       <div class="summary-metrics">
         <el-card v-for="item in summaryCards" :key="item.name" class="summary-card" :style="{ '--accent': item.color }" shadow="never">
@@ -232,10 +232,10 @@ const trendAreaPoints = computed(() => {
 
 async function loadDashboard() {
   const [allResp, favoriteResp, missingResp, todayResp, statsResp, logsResp, todayLogsResp, rulesResp] = await Promise.all([
-    getPapers({ page_size: 1000 }),
+    getPapers({ page_size: 1 }),
     getPapers({ favorite: 'true', page_size: 1 }),
     getPapers({ abstract_missing: 'true', page_size: 1 }),
-    getPapers({ date: latestDate.value, recommend_level: 'key', page_size: 1000, order: 'score' }),
+    getPapers({ date: latestDate.value, recommend_level: 'key', page_size: 200, order: 'score' }),
     getPaperDashboardStats({ date: latestDate.value }),
     getFetchLogs({ page_size: 5 }),
     getFetchLogs({ date: todayText, page_size: 200 }),
@@ -464,6 +464,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   border-radius: 14px;
   background: linear-gradient(135deg, #fff, rgba(238, 248, 255, 0.92));
+  backdrop-filter: none;
 }
 
 .summary-metrics {
