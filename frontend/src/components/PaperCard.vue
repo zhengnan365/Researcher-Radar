@@ -1,5 +1,5 @@
 <template>
-  <el-card class="paper-card hover-lift" shadow="never">
+  <el-card class="paper-card" shadow="never">
     <template #header>
       <div class="card-head">
         <div class="title-row">
@@ -116,10 +116,10 @@ async function copyDoi() {
   overflow: hidden;
   margin-bottom: 16px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
+  background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.74);
   box-shadow: 0 16px 42px rgba(47, 140, 255, 0.1);
-  backdrop-filter: blur(16px);
+  backdrop-filter: none;
 }
 
 .paper-card::before {

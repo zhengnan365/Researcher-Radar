@@ -70,7 +70,7 @@
           </template>
         </el-dropdown>
       </el-header>
-      <el-main class="content-main" @scroll.capture="handleContentScroll" @wheel.capture="handleContentWheel">
+      <el-main class="content-main" @scroll.capture.passive="handleContentScroll" @wheel.capture.passive="handleContentWheel">
         <router-view v-slot="{ Component }">
           <keep-alive :max="16">
             <component :is="Component" />
@@ -93,7 +93,7 @@ const route = useRoute()
 const sidebarCollapsed = ref(readSidebarCollapsed())
 const headerHidden = ref(false)
 let activeScrollContainer = null
-const headerHideScrollThreshold = 12
+const headerHideScrollThreshold = 72
 const headerRevealScrollThreshold = 4
 
 function handleContentScroll(event) {
@@ -339,15 +339,15 @@ async function handleLogout() {
   height: 58px;
   padding: 0 28px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.22);
-  background: rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(14px);
+  background: #fff;
   display: grid;
   grid-template-columns: minmax(40px, 1fr) auto minmax(40px, 1fr);
   align-items: center;
   gap: 18px;
   flex-shrink: 0;
   overflow: hidden;
-  transition: height 0.2s ease, opacity 0.2s ease, border-color 0.2s ease;
+  /* Animating height relayouts the entire scrolling page on every frame. */
+  transition: none;
 }
 
 .main-shell.is-header-hidden .top-bar {

@@ -855,8 +855,9 @@ onBeforeUnmount(() => {
   margin-bottom: 14px;
   padding: 12px;
   border-radius: 22px;
+  background: #fff;
   box-shadow: var(--shadow-blue);
-  backdrop-filter: blur(16px);
+  backdrop-filter: none;
   flex-shrink: 0;
 }
 
@@ -999,6 +1000,10 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   padding-right: 4px;
   padding-bottom: 12px;
+}
+
+.calendar-side :deep(.el-card) {
+  backdrop-filter: none;
 }
 
 .is-right-collapsed .calendar-side {
