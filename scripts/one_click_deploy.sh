@@ -128,7 +128,10 @@ PY
 
 install_cron_job() {
   local cron_expr="$1"
-  local log_file="$BACKEND_DIR/logs/literature_daily.log"
+  local log_file="$BACKEND_DIR/logs/researcher-radar.log"
+  if [ "$PROJECT_DIR" = "/www/wwwroot/researcher-radar" ]; then
+    log_file="$BACKEND_DIR/logs/literature_daily.log"
+  fi
   local cron_cmd="cd $BACKEND_DIR && $BACKEND_DIR/.venv/bin/python manage.py fetch_daily_papers >> $log_file 2>&1"
   local cron_line="$cron_expr $cron_cmd"
   local current_cron

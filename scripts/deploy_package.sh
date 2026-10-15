@@ -5,7 +5,7 @@ DEFAULT_PROJECT_DIR="/www/wwwroot/researcher-radar"
 DEFAULT_DOMAIN=""
 DEFAULT_SCHEME="https"
 DEFAULT_BACKEND_PORT="8000"
-DEFAULT_SERVICE_NAME="literature_daily"
+DEFAULT_SERVICE_NAME="researcher-radar"
 DEFAULT_CRON_EXPR="0 8 * * *"
 
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
@@ -338,7 +338,10 @@ install_cron_job() {
     echo "cron 表达式无效。示例：0 8 * * *，或直接输入 8 表示每天 08:00。"
     exit 1
   fi
-  local log_file="$PROJECT_DIR/logs/literature_daily.log"
+  local log_file="$PROJECT_DIR/logs/researcher-radar.log"
+  if [ "$PROJECT_DIR" = "/www/wwwroot/researcher-radar" ]; then
+    log_file="$PROJECT_DIR/logs/literature_daily.log"
+  fi
   local cron_cmd="cd $BACKEND_DIR && set -a && . $PROJECT_DIR/.env && set +a && $BACKEND_DIR/.venv/bin/python manage.py fetch_daily_papers >> $log_file 2>&1"
   local cron_line="$expr $cron_cmd"
   local tmp
@@ -487,7 +490,11 @@ main() {
     esac
   done
 
-  PROJECT_DIR="$(prompt '服务器项目目录' "$DEFAULT_PROJECT_DIR")"
+  local project_default="${PROJECT_DIR:-$DEFAULT_PROJECT_DIR}"
+  if [ "$mode" = "2" ] && [ -z "${PROJECT_DIR:-}" ] && [ ! -f "$DEFAULT_PROJECT_DIR/.env" ] && [ -f "/www/wwwroot/researcher-radar/.env" ]; then
+    project_default="/www/wwwroot/researcher-radar"
+  fi
+  PROJECT_DIR="$(prompt '服务器项目目录' "$project_default")"
   if [ "$mode" = "2" ] && [ ! -f "$PROJECT_DIR/.env" ]; then
     echo "未发现现有部署配置 $PROJECT_DIR/.env；请先选择首次部署。" >&2
     exit 1
@@ -508,7 +515,11 @@ main() {
     echo "后端本机端口无效：$BACKEND_PORT（必须为 1-65535 的整数）" >&2
     exit 1
   fi
-  SERVICE_NAME="$(prompt 'systemd 服务名' "$DEFAULT_SERVICE_NAME")"
+  local service_default="$DEFAULT_SERVICE_NAME"
+  if [ "$mode" = "2" ] && [ "$PROJECT_DIR" = "/www/wwwroot/researcher-radar" ]; then
+    service_default="literature_daily"
+  fi
+  SERVICE_NAME="$(prompt 'systemd 服务名' "${SERVICE_NAME:-$service_default}")"
 
   DJANGO_ALLOWED_HOSTS_VALUE="$DOMAIN,127.0.0.1,localhost"
   if [ -n "$SERVER_IP" ]; then

@@ -1,9 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="${PROJECT_DIR:-/www/wwwroot/researcher-radar}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 BACKEND_DIR="$PROJECT_DIR/backend"
-LOG_FILE="$PROJECT_DIR/logs/literature_daily.log"
+LOG_FILE="$PROJECT_DIR/logs/researcher-radar.log"
+if [ "$PROJECT_DIR" = "/www/wwwroot/researcher-radar" ]; then
+  LOG_FILE="$PROJECT_DIR/logs/literature_daily.log"
+fi
 CRON_INPUT="${1:-${CRON_EXPR:-0 8 * * *}}"
 
 normalize_cron_expr() {

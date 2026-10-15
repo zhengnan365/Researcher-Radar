@@ -12,7 +12,7 @@ https://radar.example.com
 /www/wwwroot/researcher-radar
 ```
 
-`literature_daily` 只是推荐的项目目录名，不要求服务器或本地提前存在。部署时可以新建这个目录；如果宝塔站点已经使用了其他目录，后续所有命令中的 `/www/wwwroot/researcher-radar` 都替换为实际目录。脚本也支持用 `PROJECT_DIR` 覆盖：
+`researcher-radar` 是新部署的默认目录名，不要求提前创建。已有服务器若使用 `/www/wwwroot/researcher-radar`，更新时继续填写该目录，不要仅为改名而搬动运行数据。其他目录也可在部署向导中指定；单独执行脚本时可用 `PROJECT_DIR` 覆盖：
 
 ```bash
 PROJECT_DIR=/www/wwwroot/你的实际目录 bash scripts/server_setup.sh radar.example.com
@@ -55,7 +55,7 @@ researcher_radar_deploy_YYYYMMDD.zip
 上传到服务器后建议先解压到临时目录，不要直接覆盖正式项目目录：
 
 ```text
-/tmp/literature_daily_release
+/tmp/researcher_radar_release
 ```
 
 部署包不应包含：
@@ -79,10 +79,10 @@ __pycache__
 推荐使用新的部署包脚本：
 
 ```bash
-rm -rf /tmp/literature_daily_release
-mkdir -p /tmp/literature_daily_release
-unzip /www/wwwroot/researcher_radar_deploy_YYYYMMDD.zip -d /tmp/literature_daily_release
-bash /tmp/literature_daily_release/deploy.sh
+rm -rf /tmp/researcher_radar_release
+mkdir -p /tmp/researcher_radar_release
+unzip /www/wwwroot/researcher_radar_deploy_YYYYMMDD.zip -d /tmp/researcher_radar_release
+bash /tmp/researcher_radar_release/deploy.sh
 ```
 
 脚本会提示选择：
@@ -108,7 +108,7 @@ bash /tmp/literature_daily_release/deploy.sh
 是否创建/重启 systemd 后端服务（选择 Y 将强制释放所选后端端口） [Y]:
 ```
 
-选择 `Y` 后会停止同名服务并强制释放所选后端端口，再启动新的 systemd 服务；选择 `N` 则不触碰当前后端。若以前在宝塔“Python 项目”中启动过同一个 Django 后端，建议停用该项目，只保留 `literature_daily.service`，防止宝塔守护进程再次抢占端口。
+选择 `Y` 后会停止同名服务并强制释放所选后端端口，再启动新的 systemd 服务；选择 `N` 则不触碰当前后端。若以前在宝塔“Python 项目”中启动过同一个 Django 后端，建议停用该项目，只保留 `researcher-radar.service`，防止宝塔守护进程再次抢占端口。
 
 ## 4. 旧版一键部署
 
@@ -242,7 +242,7 @@ npm install
 启动命令：
 
 ```bash
-cd /www/wwwroot/researcher-radar/backend && DJANGO_DEBUG=false DJANGO_ALLOWED_HOSTS=radar.example.com,203.0.113.10,127.0.0.1 DJANGO_CORS_ALLOWED_ORIGINS=https://radar.example.com DJANGO_CSRF_TRUSTED_ORIGINS=https://radar.example.com DJANGO_STATIC_ROOT=/www/wwwroot/researcher-radar/backend/staticfiles /www/wwwroot/researcher-radar/backend/.venv/bin/gunicorn literature_backend.wsgi:application --bind 127.0.0.1:8000 --workers 2 --timeout 300
+cd /www/wwwroot/researcher-radar/backend && DJANGO_DEBUG=false DJANGO_ALLOWED_HOSTS=radar.example.com,203.0.113.10,127.0.0.1 DJANGO_CORS_ALLOWED_ORIGINS=https://radar.example.com DJANGO_CSRF_TRUSTED_ORIGINS=https://radar.example.com DJANGO_STATIC_ROOT=/www/wwwroot/researcher-radar/staticfiles /www/wwwroot/researcher-radar/backend/.venv/bin/gunicorn literature_backend.wsgi:application --bind 127.0.0.1:8000 --workers 2 --timeout 300
 ```
 
 如果宝塔支持环境变量，建议拆成：
@@ -252,7 +252,7 @@ DJANGO_DEBUG=false
 DJANGO_ALLOWED_HOSTS=radar.example.com,203.0.113.10,127.0.0.1
 DJANGO_CORS_ALLOWED_ORIGINS=https://radar.example.com
 DJANGO_CSRF_TRUSTED_ORIGINS=https://radar.example.com
-DJANGO_STATIC_ROOT=/www/wwwroot/researcher-radar/backend/staticfiles
+DJANGO_STATIC_ROOT=/www/wwwroot/researcher-radar/staticfiles
 ```
 
 然后启动命令简化为：
@@ -297,7 +297,7 @@ location /admin/ {
 }
 
 location /static/ {
-    alias /www/wwwroot/researcher-radar/backend/staticfiles/;
+    alias /www/wwwroot/researcher-radar/staticfiles/;
 }
 
 location / {
@@ -334,7 +334,7 @@ bash scripts/install_cron.sh
 默认每天 08:00 执行：
 
 ```bash
-cd /www/wwwroot/researcher-radar/backend && /www/wwwroot/researcher-radar/backend/.venv/bin/python manage.py fetch_daily_papers >> /www/wwwroot/researcher-radar/backend/logs/literature_daily.log 2>&1
+cd /www/wwwroot/researcher-radar/backend && /www/wwwroot/researcher-radar/backend/.venv/bin/python manage.py fetch_daily_papers >> /www/wwwroot/researcher-radar/logs/researcher-radar.log 2>&1
 ```
 
 宝塔计划任务也可以手动添加同一条命令。

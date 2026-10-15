@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PROJECT_DIR="${PROJECT_DIR:-/www/wwwroot/researcher-radar}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="${PROJECT_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 BACKEND_DIR="$PROJECT_DIR/backend"
-SERVICE_NAME="${SERVICE_NAME:-literature_daily}"
+if [ "$PROJECT_DIR" = "/www/wwwroot/researcher-radar" ]; then
+  SERVICE_NAME="${SERVICE_NAME:-literature_daily}"
+else
+  SERVICE_NAME="${SERVICE_NAME:-researcher-radar}"
+fi
 
 if [ ! -d "$BACKEND_DIR" ] || [ ! -f "$PROJECT_DIR/.env" ]; then
   echo "项目目录或 .env 不存在：$PROJECT_DIR" >&2

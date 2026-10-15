@@ -4,7 +4,7 @@
 
 科研雷达（ResearcherRadar）用于自动追踪指定期刊 RSS 和研究关键词下的最新文献信息，完成 DOI / 元数据 / 摘要补全、去重入库、关键词匹配、研究方向归类、每日文献日报生成，并提供 Vue 网页端浏览、筛选、收藏、摘要更新、Zotero 文献库同步与导入功能。
 
-品牌名称已更新；生产服务器的 `literature_daily` 目录、systemd 服务名、Django 包名及配置文件内部格式保持兼容，无需搬迁数据库或重新导入配置。
+新部署默认使用 `/www/wwwroot/researcher-radar` 和 `researcher-radar.service`。已有部署可以继续使用原目录和服务名，无需搬迁数据库；Django 包名 `literature_backend` 属于程序内部标识，保持不变。
 
 当前主系统位于 `backend/` 和 `frontend/`。早期脚本版原型已清理，部署和日常使用均以 Django + Vue 系统为准。
 
@@ -109,14 +109,14 @@ project-root/
 
 ```bash
 cd /path/to/workspace
-git clone https://github.com/zhengnan365/Researcher-Radar.git literature_daily
-cd literature_daily
+git clone https://github.com/zhengnan365/Researcher-Radar.git researcher-radar
+cd researcher-radar
 ```
 
 私有仓库推荐为服务器配置 GitHub Deploy Key，然后使用 SSH 地址：
 
 ```bash
-git clone git@github.com:zhengnan365/Researcher-Radar.git literature_daily
+git clone git@github.com:zhengnan365/Researcher-Radar.git researcher-radar
 ```
 
 如果使用 GitHub Desktop，本地选择 `File -> Add local repository` 打开本项目；首次上传使用 `Publish repository`，并建议勾选 `Keep this code private`。
@@ -132,10 +132,10 @@ powershell -ExecutionPolicy Bypass -File scripts\make_deploy_package.ps1
 服务器端首次部署或增量部署：
 
 ```bash
-rm -rf /tmp/literature_daily_release
-mkdir -p /tmp/literature_daily_release
-unzip /www/wwwroot/researcher_radar_deploy_YYYYMMDD.zip -d /tmp/literature_daily_release
-bash /tmp/literature_daily_release/deploy.sh
+rm -rf /tmp/researcher_radar_release
+mkdir -p /tmp/researcher_radar_release
+unzip /www/wwwroot/researcher_radar_deploy_YYYYMMDD.zip -d /tmp/researcher_radar_release
+bash /tmp/researcher_radar_release/deploy.sh
 ```
 
 部署脚本会让用户选择：
@@ -151,9 +151,9 @@ bash /tmp/literature_daily_release/deploy.sh
 是否创建/重启 systemd 后端服务（选择 Y 将强制释放所选后端端口） [Y]:
 ```
 
-- 选择 `Y`：停止 `literature_daily` 服务，显示所选后端端口的占用进程，先尝试正常终止，必要时强制终止，然后重新创建并启动 systemd 服务。
+- 选择 `Y`：停止所选 systemd 服务，显示后端端口的占用进程，先尝试正常终止，必要时强制终止，然后重新创建并启动服务。
 - 选择 `N`：不停止现有进程、不释放端口，也不修改或重启 systemd 服务。
-- 同一台服务器不要同时使用宝塔 Python 项目和 systemd 管理同一个后端端口；生产环境推荐只保留 `literature_daily.service`。
+- 同一台服务器不要同时使用宝塔 Python 项目和 systemd 管理同一个后端端口；生产环境推荐只保留 `researcher-radar.service`。
 
 详细说明见：[docs/DEPLOY_FIRST_INCREMENTAL.md](docs/DEPLOY_FIRST_INCREMENTAL.md)。
 
@@ -304,8 +304,8 @@ python manage.py createsuperuser
 
 ```bash
 cd /www/wwwroot
-git clone git@github.com:zhengnan365/Researcher-Radar.git literature_daily
-cd literature_daily
+git clone git@github.com:zhengnan365/Researcher-Radar.git researcher-radar
+cd researcher-radar
 bash scripts/deploy_package.sh
 ```
 
@@ -322,7 +322,7 @@ git pull --ff-only
 bash scripts/deploy_package.sh
 ```
 
-仓库历史曾清理重写。旧服务器检出第一次更新前，请先按[首次与增量部署指南](docs/DEPLOY_FIRST_INCREMENTAL.md#6-增量部署)执行一次 `git fetch` 和 `git reset --hard origin/main`；此后可继续使用上面的 `git pull --ff-only`。如果服务器原本使用 HTTPS 拉取，则将 origin 设为 `https://github.com/zhengnan365/Researcher-Radar.git`。选择 `2) 增量部署`。脚本会保留：
+仓库历史曾清理重写。旧服务器检出第一次更新前，请先进入**现有项目目录**，按[首次与增量部署指南](docs/DEPLOY_FIRST_INCREMENTAL.md#6-增量部署)执行一次 `git fetch` 和 `git reset --hard origin/main`；此后可继续使用上面的 `git pull --ff-only`。如果服务器原本使用 HTTPS 拉取，则将 origin 设为 `https://github.com/zhengnan365/Researcher-Radar.git`。选择 `2) 增量部署`；若旧目录名仍为 `literature_daily`，填写原目录和原服务名。脚本会保留：
 
 - `/www/wwwroot/researcher-radar/.env`；
 - `/www/wwwroot/researcher-radar/data/db.sqlite3`；
@@ -454,7 +454,7 @@ DJANGO_CSRF_TRUSTED_ORIGINS=https://你的域名
 每日 08:00 抓取 RSS 并生成日报：
 
 ```cron
-0 8 * * * cd /www/wwwroot/researcher-radar/backend && /www/wwwroot/researcher-radar/backend/.venv/bin/python manage.py fetch_daily_papers >> /www/wwwroot/researcher-radar/backend/literature_daily.log 2>&1
+0 8 * * * cd /www/wwwroot/researcher-radar/backend && /www/wwwroot/researcher-radar/backend/.venv/bin/python manage.py fetch_daily_papers >> /www/wwwroot/researcher-radar/logs/researcher-radar.log 2>&1
 ```
 
 手动抓取：
@@ -908,7 +908,7 @@ cd /www/wwwroot/researcher-radar/backend
 source .venv/bin/activate
 python manage.py migrate
 python manage.py check
-systemctl restart literature_daily
+systemctl restart researcher-radar
 ```
 
 确认生产数据库文件和 `data/` 目录对后端运行用户可读写。前端请求应携带 `Authorization: Token ...`；如果浏览器保存了失效 Token，退出登录或清理站点本地存储后重新登录。

@@ -6,7 +6,7 @@
 代码可以覆盖，运行数据不能覆盖。
 ```
 
-服务器运行数据固定保存在：
+新部署默认将运行数据保存在：
 
 ```text
 /www/wwwroot/researcher-radar/.env
@@ -15,6 +15,8 @@
 ```
 
 上传新版本时，部署脚本会自动排除这些目录和文件。
+
+已有服务器若部署在 `/www/wwwroot/researcher-radar`，增量更新时继续使用原目录和原服务名；无需为了项目改名而移动 `.env` 或数据库。本文后续的路径和服务名示例均针对新部署，旧部署应替换为实际值。
 
 ## 1. 本地生成部署包
 
@@ -58,15 +60,15 @@ logs/
 不要直接解压覆盖正式目录。
 
 ```bash
-rm -rf /tmp/literature_daily_release
-mkdir -p /tmp/literature_daily_release
-unzip /www/wwwroot/researcher_radar_deploy_YYYYMMDD.zip -d /tmp/literature_daily_release
+rm -rf /tmp/researcher_radar_release
+mkdir -p /tmp/researcher_radar_release
+unzip /www/wwwroot/researcher_radar_deploy_YYYYMMDD.zip -d /tmp/researcher_radar_release
 ```
 
 ## 4. 运行部署脚本
 
 ```bash
-bash /tmp/literature_daily_release/deploy.sh
+bash /tmp/researcher_radar_release/deploy.sh
 ```
 
 脚本会让你选择：
@@ -107,7 +109,7 @@ bash /tmp/literature_daily_release/deploy.sh
 服务器公网 IP：203.0.113.10
 访问协议：https
 后端本机端口：8000
-systemd 服务名：literature_daily
+systemd 服务名：researcher-radar
 ```
 
 cron 时间支持三种输入：
@@ -132,7 +134,7 @@ git reset --hard origin/main
 bash scripts/deploy_package.sh
 ```
 
-若 `git status --short` 显示需要保留的代码改动，请先单独备份这些文件，再执行 `reset`。`.env`、`data/db.sqlite3`、日志和虚拟环境都在 Git 跟踪范围之外，部署脚本继续按增量模式 `2` 运行，不会重置账号密码。完成这次更新后，后续可恢复使用 `git pull --ff-only`。
+若 `git status --short` 显示需要保留的代码改动，请先单独备份这些文件，再执行 `reset`。这段命令要在服务器**现有的项目目录**运行；旧目录无需改名。`.env`、`data/db.sqlite3`、日志和虚拟环境都在 Git 跟踪范围之外，部署脚本继续按增量模式 `2` 运行，不会重置账号密码。完成这次更新后，后续可恢复使用 `git pull --ff-only`。
 
 后续更新建议选择 `2`。
 
@@ -151,7 +153,7 @@ bash scripts/deploy_package.sh
 
 选择重启 systemd 时会自动释放所选后端端口，避免旧 Gunicorn、手工启动进程或宝塔旧 Python 项目占用端口导致新服务启动失败。不要让宝塔 Python 项目和 systemd 长期同时管理同一个后端。
 
-增量部署不会覆盖：
+增量部署不会覆盖项目目录中的：
 
 ```text
 /www/wwwroot/researcher-radar/data/db.sqlite3
@@ -179,19 +181,19 @@ bash scripts/deploy_package.sh
 查看服务状态：
 
 ```bash
-systemctl status literature_daily
+systemctl status researcher-radar
 ```
 
 重启后端：
 
 ```bash
-systemctl restart literature_daily
+systemctl restart researcher-radar
 ```
 
 查看后端日志：
 
 ```bash
-journalctl -u literature_daily -f
+journalctl -u researcher-radar -f
 ```
 
 手动抓取：
