@@ -37,9 +37,10 @@ def summarize_paper(paper: Paper, *, force: bool = False) -> Paper:
         json={
             "model": model,
             "messages": [
-                {"role": "system", "content": "你是严谨的文献速读助手。只能依据用户提供的标题和原始摘要，用中文提炼研究问题、方法、主要发现与局限。摘要未明确给出的信息写“原始摘要未说明”，不得推测数值、结论或全文内容。输出简洁纯文本。"},
+                {"role": "system", "content": "你是严谨的文献速读助手。只能依据标题和原始摘要，用中文按“研究问题、方法、主要发现、局限”四点各写一句，每点尽量不超过50字。摘要未明确给出的信息写“原始摘要未说明”，不得推测数值、结论或全文内容。只输出这四点纯文本。"},
                 {"role": "user", "content": content},
             ],
+            "max_tokens": 450,
         },
         timeout=45,
     )

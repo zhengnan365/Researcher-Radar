@@ -29,6 +29,7 @@ class AiSummaryTests(TestCase):
         self.assertIn("电池寿命", self.paper.ai_summary)
         self.assertEqual(self.paper.ai_summary_model, "test-model")
         self.assertIn(self.paper.abstract, post.call_args.kwargs["json"]["messages"][1]["content"])
+        self.assertEqual(post.call_args.kwargs["json"]["max_tokens"], 450)
 
     def test_missing_abstract_is_not_summarized(self):
         self.paper.abstract = ""
