@@ -10,9 +10,6 @@
         <el-button v-if="paper.url" tag="a" :href="paper.url" target="_blank" size="small" type="primary" plain>查看全文</el-button>
       </div>
       <el-tabs v-model="activeTab" class="detail-tabs">
-        <el-tab-pane label="摘要" name="abstract">
-          <p class="abstract">{{ paper.abstract || '暂无摘要' }}</p>
-        </el-tab-pane>
         <el-tab-pane label="AI 速读" name="ai">
           <div class="ai-summary-head">
             <p class="muted ai-note">仅依据标题和原始摘要生成，不代表阅读全文。</p>
@@ -38,46 +35,31 @@
             <el-descriptions-item label="匹配方向" :span="2">{{ matchedDirectionNames(paper) || '-' }}</el-descriptions-item>
             <el-descriptions-item label="最近评分" :span="2">{{ formatDateTime(paper.scored_at) }}</el-descriptions-item>
           </el-descriptions>
-          <el-collapse v-if="paper.score_detail?.version === 2" class="score-details">
-            <el-collapse-item title="评分详情" name="score">
-              <div v-if="paper.score_detail.exclusion" class="muted">排除原因：{{ paper.score_detail.exclusion }}</div>
-              <template v-else>
-                <div class="score-totals">
-                  <span>关键词 {{ paper.score_detail.keyword_score }} 分</span>
-                  <span><DirectionMetricLabel metric="relevance" label="研究相关度贡献" /> +{{ paper.score_detail.direction_bonus?.score || 0 }}</span>
-                  <span>多字段 +{{ paper.score_detail.field_bonus || 0 }}</span>
-                  <strong>最终 {{ paper.score_detail.final_score }} 分</strong>
-                </div>
-                <el-table :data="paper.score_detail.keywords || []" size="small" max-height="260">
-                  <el-table-column prop="keyword" label="关键词" min-width="170" />
-                  <el-table-column label="位置" width="105"><template #default="{ row }">{{ fieldText(row.field) }}</template></el-table-column>
-                  <el-table-column prop="weight" label="权重" width="65" />
-                  <el-table-column prop="factor" label="倍率" width="65" />
-                  <el-table-column prop="score" label="贡献" width="75" />
-                </el-table>
-                <div v-if="paper.score_detail.direction_bonus?.name" class="score-note direction-score-note">
-                  <div>研究方向：{{ paper.score_detail.direction_bonus.name }}</div>
-                  <div><DirectionMetricLabel metric="relevance" />：{{ paper.score_detail.direction_bonus.weight }}</div>
-                  <div>方向贡献：+{{ paper.score_detail.direction_bonus.score }} 分</div>
-                </div>
-                <p class="score-note muted"><DirectionMetricLabel metric="priority" />只影响排序，不计入推荐分。</p>
-                <p class="score-note muted">奖励合计不超过关键词分的 25%；封顶前 {{ paper.score_detail.raw_score }} 分。</p>
-                <p v-if="paper.score_detail.key_demotion_match" class="score-note muted">标题命中跨领域应用词“{{ paper.score_detail.key_demotion_match }}”，重点推荐降为 {{ paper.score_detail.final_score }} 分（原计算 {{ paper.score_detail.unrestricted_score }} 分）。</p>
-              </template>
-            </el-collapse-item>
-          </el-collapse>
-        </el-tab-pane>
-        <el-tab-pane label="文章信息" name="info">
-          <el-descriptions :column="2" border size="small" class="detail-descriptions">
-            <el-descriptions-item label="期刊">{{ paper.journal || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="发布日期">{{ paper.published_date || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="DOI">{{ paper.doi || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="来源">{{ paper.source_name || paper.source_name_display || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="Zotero">{{ paper.zotero_imported ? '已导入' : '未导入' }}</el-descriptions-item>
-          </el-descriptions>
-          <div class="tag-row">
-            <el-tag v-for="item in paper.directions" :key="`d-${item.id}`" type="success">{{ item.name }}</el-tag>
-            <el-tag v-for="item in paper.keywords" :key="`k-${item.id}`">{{ item.keyword }}</el-tag>
+          <div v-if="paper.score_detail?.version === 2" class="score-details">
+            <div v-if="paper.score_detail.exclusion" class="muted">排除原因：{{ paper.score_detail.exclusion }}</div>
+            <template v-else>
+              <div class="score-totals">
+                <span>关键词 {{ paper.score_detail.keyword_score }} 分</span>
+                <span><DirectionMetricLabel metric="relevance" label="研究相关度贡献" /> +{{ paper.score_detail.direction_bonus?.score || 0 }}</span>
+                <span>多字段 +{{ paper.score_detail.field_bonus || 0 }}</span>
+                <strong>最终 {{ paper.score_detail.final_score }} 分</strong>
+              </div>
+              <el-table :data="paper.score_detail.keywords || []" size="small" max-height="260">
+                <el-table-column prop="keyword" label="关键词" min-width="170" />
+                <el-table-column label="位置" width="105"><template #default="{ row }">{{ fieldText(row.field) }}</template></el-table-column>
+                <el-table-column prop="weight" label="权重" width="65" />
+                <el-table-column prop="factor" label="倍率" width="65" />
+                <el-table-column prop="score" label="贡献" width="75" />
+              </el-table>
+              <div v-if="paper.score_detail.direction_bonus?.name" class="score-note direction-score-note">
+                <div>研究方向：{{ paper.score_detail.direction_bonus.name }}</div>
+                <div><DirectionMetricLabel metric="relevance" />：{{ paper.score_detail.direction_bonus.weight }}</div>
+                <div>方向贡献：+{{ paper.score_detail.direction_bonus.score }} 分</div>
+              </div>
+              <p class="score-note muted"><DirectionMetricLabel metric="priority" />只影响排序，不计入推荐分。</p>
+              <p class="score-note muted">奖励合计不超过关键词分的 25%；封顶前 {{ paper.score_detail.raw_score }} 分。</p>
+              <p v-if="paper.score_detail.key_demotion_match" class="score-note muted">标题命中跨领域应用词“{{ paper.score_detail.key_demotion_match }}”，重点推荐降为 {{ paper.score_detail.final_score }} 分（原计算 {{ paper.score_detail.unrestricted_score }} 分）。</p>
+            </template>
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -96,19 +78,18 @@ const props = defineProps({
   modelValue: Boolean,
   paper: Object,
   aiReadRequest: { type: Number, default: 0 },
-  focusAi: { type: Boolean, default: false },
 })
 const emit = defineEmits(['update:modelValue', 'summary-updated'])
 const summaryLoadingIds = ref(new Set())
 const summaryLoading = computed(() => summaryLoadingIds.value.has(props.paper?.id))
 const localSummary = ref('')
-const activeTab = ref('abstract')
+const activeTab = ref('ai')
 watch(() => props.paper?.id, () => {
   localSummary.value = props.paper?.ai_summary || ''
-  activeTab.value = props.focusAi || props.paper?.ai_summary ? 'ai' : 'abstract'
+  activeTab.value = 'ai'
 }, { immediate: true })
 watch(() => props.modelValue, (open) => {
-  if (open) activeTab.value = props.focusAi || props.paper?.ai_summary ? 'ai' : 'abstract'
+  if (open) activeTab.value = 'ai'
 })
 watch(() => props.aiReadRequest, () => {
   activeTab.value = 'ai'
@@ -166,12 +147,6 @@ function formatDateTime(value) {
 .journal-name { color: #1769d8; font-weight: 700; }
 .detail-tabs { min-height: 0; }
 .detail-descriptions { margin-top: 4px; }
-.tag-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 14px 0;
-}
 .abstract {
   margin: 8px 0;
   line-height: 1.65;

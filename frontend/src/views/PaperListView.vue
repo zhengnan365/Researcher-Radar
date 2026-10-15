@@ -141,7 +141,6 @@
       v-model="detailVisible"
       :paper="currentPaper"
       :ai-read-request="aiReadRequest"
-      :focus-ai="focusAi"
       @summary-updated="updatePaperSummary"
     />
 
@@ -279,7 +278,6 @@ const sources = ref([])
 const detailVisible = ref(false)
 const currentPaper = ref(null)
 const aiReadRequest = ref(0)
-const focusAi = ref(false)
 const selectedFavoriteCount = ref(0)
 const selectedImportedCount = ref(0)
 const selectedMissingAbstractCount = ref(0)
@@ -445,13 +443,11 @@ function applyFilters() {
 
 function openDetail(paper) {
   currentPaper.value = paper
-  focusAi.value = false
   detailVisible.value = true
 }
 
 function openAiRead(paper) {
   currentPaper.value = paper
-  focusAi.value = true
   detailVisible.value = true
   aiReadRequest.value += 1
 }
