@@ -14,27 +14,29 @@
           <div class="ai-summary-head">
             <p class="muted ai-note">仅依据标题和原始摘要生成，不代表阅读全文。</p>
             <el-button :disabled="!paper.abstract" :loading="summaryLoading" @click="generateSummary()">
-              {{ localSummary ? '重新生成' : '生成速读' }}
+              {{ summaryLoading ? '生成中…' : localSummary ? '重新生成' : '生成速读' }}
             </el-button>
           </div>
+          <p v-if="localSummary && summaryLoading" class="ai-refreshing" role="status">正在重新生成，完成后会自动更新并保存…</p>
           <p v-if="localSummary" class="abstract ai-summary">{{ localSummary }}</p>
-          <el-empty v-else-if="!summaryLoading" :description="paper.abstract ? '点击生成速读' : '缺少原始摘要，暂不能生成速读'" :image-size="72" />
-          <p v-else class="muted ai-waiting">正在生成速读，请稍候…</p>
+          <div v-else-if="summaryLoading" class="ai-state" role="status">
+            <el-icon class="is-loading"><Loading /></el-icon>
+            <span>正在分析标题和摘要，完成后会自动保存…</span>
+          </div>
+          <div v-else class="ai-state muted">
+            {{ paper.abstract ? '生成后会保存，下次打开可直接查看。' : '缺少原始摘要，暂不能生成速读。' }}
+          </div>
         </el-tab-pane>
         <el-tab-pane label="评分" name="score">
           <el-descriptions :column="2" border size="small" class="detail-descriptions">
-            <el-descriptions-item label="推荐分数">
-              {{ paper.recommend_score ?? 0 }} 分
-              <span v-if="paper.relevance_override === 'irrelevant'" class="muted">（已标记不相关，系统原评分 {{ paper.system_recommend_score ?? 0 }} 分）</span>
-            </el-descriptions-item>
-            <el-descriptions-item label="推荐等级">{{ levelText(paper.recommend_level) }}</el-descriptions-item>
-            <el-descriptions-item label="日报候选">{{ paper.is_daily_candidate ? '是' : '否' }}</el-descriptions-item>
-            <el-descriptions-item label="重点文献">{{ paper.is_key_paper ? '是' : '否' }}</el-descriptions-item>
             <el-descriptions-item label="命中字段" :span="2">{{ matchedFieldSummary(paper) || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="命中关键词" :span="2">{{ matchedKeywordNames(paper) || '-' }}</el-descriptions-item>
-            <el-descriptions-item label="匹配方向" :span="2">{{ matchedDirectionNames(paper) || '-' }}</el-descriptions-item>
+            <template v-if="paper.score_detail?.version !== 2">
+              <el-descriptions-item label="命中关键词" :span="2">{{ matchedKeywordNames(paper) || '-' }}</el-descriptions-item>
+              <el-descriptions-item label="匹配方向" :span="2">{{ matchedDirectionNames(paper) || '-' }}</el-descriptions-item>
+            </template>
             <el-descriptions-item label="最近评分" :span="2">{{ formatDateTime(paper.scored_at) }}</el-descriptions-item>
           </el-descriptions>
+          <p v-if="paper.relevance_override === 'irrelevant'" class="score-note muted">已标记不相关，系统原评分 {{ paper.system_recommend_score ?? 0 }} 分。</p>
           <div v-if="paper.score_detail?.version === 2" class="score-details">
             <div v-if="paper.score_detail.exclusion" class="muted">排除原因：{{ paper.score_detail.exclusion }}</div>
             <template v-else>
@@ -42,22 +44,20 @@
                 <span>关键词 {{ paper.score_detail.keyword_score }} 分</span>
                 <span><DirectionMetricLabel metric="relevance" label="研究相关度贡献" /> +{{ paper.score_detail.direction_bonus?.score || 0 }}</span>
                 <span>多字段 +{{ paper.score_detail.field_bonus || 0 }}</span>
-                <strong>最终 {{ paper.score_detail.final_score }} 分</strong>
               </div>
-              <el-table :data="paper.score_detail.keywords || []" size="small" max-height="260">
+              <el-table :data="sortedKeywordMatches" size="small" max-height="260" empty-text="暂无关键词命中">
                 <el-table-column prop="keyword" label="关键词" min-width="170" />
                 <el-table-column label="位置" width="105"><template #default="{ row }">{{ fieldText(row.field) }}</template></el-table-column>
                 <el-table-column prop="weight" label="权重" width="65" />
                 <el-table-column prop="factor" label="倍率" width="65" />
-                <el-table-column prop="score" label="贡献" width="75" />
+                <el-table-column label="贡献" width="75"><template #default="{ row }"><strong class="keyword-contribution">+{{ row.score }}</strong></template></el-table-column>
               </el-table>
               <div v-if="paper.score_detail.direction_bonus?.name" class="score-note direction-score-note">
                 <div>研究方向：{{ paper.score_detail.direction_bonus.name }}</div>
                 <div><DirectionMetricLabel metric="relevance" />：{{ paper.score_detail.direction_bonus.weight }}</div>
                 <div>方向贡献：+{{ paper.score_detail.direction_bonus.score }} 分</div>
               </div>
-              <p class="score-note muted"><DirectionMetricLabel metric="priority" />只影响排序，不计入推荐分。</p>
-              <p class="score-note muted">奖励合计不超过关键词分的 25%；封顶前 {{ paper.score_detail.raw_score }} 分。</p>
+              <p class="score-note muted">方向和多字段奖励合计不超过关键词分的 25%；<DirectionMetricLabel metric="priority" />仅用于排序。</p>
               <p v-if="paper.score_detail.key_demotion_match" class="score-note muted">标题命中跨领域应用词“{{ paper.score_detail.key_demotion_match }}”，重点推荐降为 {{ paper.score_detail.final_score }} 分（原计算 {{ paper.score_detail.unrestricted_score }} 分）。</p>
             </template>
           </div>
@@ -70,6 +70,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
 import DirectionMetricLabel from './DirectionMetricLabel.vue'
 import { summarizePaper } from '../api/papers'
 import { fieldText, levelText, matchedDirectionNames, matchedFieldSummary, matchedKeywordNames } from '../utils/scoring'
@@ -82,6 +83,8 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'summary-updated'])
 const summaryLoadingIds = ref(new Set())
 const summaryLoading = computed(() => summaryLoadingIds.value.has(props.paper?.id))
+const sortedKeywordMatches = computed(() => [...(props.paper?.score_detail?.keywords || [])]
+  .sort((a, b) => (Number(b.score) || 0) - (Number(a.score) || 0)))
 const localSummary = ref('')
 const activeTab = ref('ai')
 watch(() => props.paper?.id, () => {
@@ -155,10 +158,12 @@ function formatDateTime(value) {
 .ai-summary-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .ai-note { margin: 0; font-size: 13px; }
 .ai-summary { white-space: pre-wrap; padding: 14px; border-radius: 12px; background: #f2f7ff; }
-.ai-waiting { margin: 28px 0; text-align: center; }
+.ai-state { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 104px; font-size: 13px; text-align: center; }
+.ai-state .el-icon { font-size: 18px; color: #1769d8; }
+.ai-refreshing { margin: 12px 0 0; color: #1769d8; font-size: 13px; }
 .score-details { margin-top: 14px; }
 .score-totals { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; margin-bottom: 12px; font-size: 13px; }
-.score-totals strong { font-size: 14px; }
+.keyword-contribution { color: #1769d8; font-weight: 700; }
 .score-note { margin: 10px 0 0; font-size: 13px; line-height: 1.5; }
 .direction-score-note { display: grid; gap: 3px; }
 @media (max-width: 640px) {
